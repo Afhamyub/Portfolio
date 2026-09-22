@@ -8,7 +8,7 @@ A motion-led personal portfolio for **Afham Ayub**, a BS Computer Science studen
 
 ## About
 
-This portfolio brings together my interests in creative development, game logic, agentic AI, automation, and sketching. It includes interactive studies inspired by projects such as my chess game and Candy Crush prototype.
+This portfolio brings together my interests in creative development, game logic, agentic AI, automation. It includes interactive studies inspired by projects such as my chess game and Candy Crush prototype.
 
 ## Highlights
 
