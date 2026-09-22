@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Afham Ayub — BS Computer Science student at FAST University, Lahore. Games, code, sketching, and an interest in agentic AI and automation." />
+  <meta name="theme-color" content="#06080d" />
+  <title>Afham Ayub — Code, games &amp; experiments</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2306080d'/%3E%3Cpath d='M15 45 29 17h7l13 28h-9l-2-6H26l-3 6Zm14-13h7l-3-9Z' fill='%23dfe3e9'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preload" href="assets/fonts/baunk/Baunk.ttf" as="font" type="font/ttf" crossorigin />
+  <script src="vendor/anime.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+  <noscript><style>.intro{display:none}</style></noscript>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="intro" aria-label="Portfolio introduction">
+    <div class="intro-halftone"></div>
+    <div class="intro-lockup">
+      <div class="intro-name" aria-label="Afham">
+        <span data-letter="A">A</span><span data-letter="F">F</span><span data-letter="H">H</span><span data-letter="A">A</span><span data-letter="M">M</span>
+      </div>
+      <div class="intro-rule"><i></i></div>
+      <div class="intro-code"><span>Code &amp; curiosity</span><span>Lahore, PK</span></div>
+    </div>
+    <button class="intro-skip" type="button">Skip intro</button>
+  </div>
+
+  <div class="cursor" aria-hidden="true"><span>View</span></div>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="wordmark chase" href="#home" aria-label="Afham Ayub, back to home">AA<span>/01</span></a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a class="chase" href="#about"><span>01</span>About</a>
+      <a class="chase" href="#expertise"><span>02</span>Interests</a>
+      <a class="chase" href="#work"><span>03</span>Work</a>
+      <a class="chase" href="#journey"><span>04</span>Journey</a>
+      <a class="chase" href="#contact"><span>05</span>Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="availability">BSCS <span>/</span> Semester 03</div>
+      <button class="menu-toggle chase" type="button" aria-label="Open navigation menu" aria-controls="navigation-panel" aria-expanded="false"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <div class="menu-panel" id="navigation-panel" aria-hidden="true">
+    <p>Navigation</p>
+    <nav aria-label="Mobile navigation"><a href="#about"><span>01</span>About</a><a href="#expertise"><span>02</span>Interests</a><a href="#work"><span>03</span>Work</a><a href="#journey"><span>04</span>Journey</a><a href="#contact"><span>05</span>Contact</a></nav>
+    <a class="menu-email" href="mailto:afhamayub.001@gmail.com">afhamayub.001@gmail.com</a>
+  </div>
+
+  <main id="main" tabindex="-1">
+    <section class="hero" id="home">
+      <div class="hero-stage">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="portrait-rails" aria-hidden="true">
+          <div class="portrait-rail rail-a">
+            <figure><img src="assets/street-motion.jpg" alt="" /><span>01 / Motion</span></figure>
+            <figure><img src="assets/flower-silhouette.jpg" alt="" /><span>02 / Still</span></figure>
+            <figure><img src="assets/street-motion.jpg" alt="" /><span>03 / Motion</span></figure>
+            <figure><img src="assets/flower-silhouette.jpg" alt="" /><span>04 / Still</span></figure>
+          </div>
+          <div class="portrait-rail rail-b">
+            <figure><img src="assets/hand-silhouette.jpg" alt="" /><span>05 / Contact</span></figure>
+            <figure><img src="assets/fog-figure.jpg" alt="" /><span>06 / Distance</span></figure>
+            <figure><img src="assets/hand-silhouette.jpg" alt="" /><span>07 / Contact</span></figure>
+            <figure><img src="assets/fog-figure.jpg" alt="" /><span>08 / Distance</span></figure>
+          </div>
+        </div>
+        <div class="hero-meta"><p>Student &amp; developer <span>/</span> Lahore, PK</p><p>Personal portfolio</p></div>
+        <div class="hero-copy">
+          <div class="hero-kicker">Computer science at FAST.<br/>Curiosity everywhere else.</div>
+          <h1><span>Afham</span><span class="title-secondary">Ayub</span></h1>
+        </div>
+        <div class="hero-bottom">
+          <p>Games, code, and ideas worth exploring.<br/>Currently studying CS and finding my way into agentic AI.</p>
+          <a class="pill-link chase" data-cursor="Explore" href="#work">Selected work <span>↘</span></a>
+        </div>
+        <div class="scroll-cue"><span></span> Keep exploring</div>
+      </div>
+    </section>
+
+    <section class="about-story" id="about" aria-labelledby="about-title">
+      <h2 id="about-title" class="sr-only">About</h2>
+      <div class="about-pin">
+        <div class="about-content section">
+          <p class="eyebrow about-eyebrow">01 / A little about me</p>
+          <div class="about-layout">
+            <div class="about-editorial">
+              <h3 class="display-copy">I build things.<br/><em>I sketch, too.</em></h3>
+              <div class="about-copy"><p>I’m Afham Ayub, a third-semester BS Computer Science student at FAST University. I live in Lahore, Pakistan.</p><p>I’ve made a chess game and a Candy Crush prototype. I’m interested in agentic AI, AI automations, and developing new tools. Away from the screen, I like to sketch.</p><a class="text-link" href="https://github.com/Afhamyub" target="_blank" rel="noopener noreferrer" data-cursor="GitHub">Explore my GitHub <span aria-hidden="true">↗</span></a></div>
+            </div>
+            <div class="portrait-stage">
+              <figure class="portrait-card" tabindex="0" aria-label="Portrait of Afham Ayub. Hover or focus to animate.">
+                <svg class="squishy-background" viewBox="0 0 400 530" preserveAspectRatio="none" aria-hidden="true"><circle class="squish-circle" cx="200" cy="154" r="152"/><ellipse class="squish-ellipse" cx="200" cy="420" rx="152" ry="58"/></svg>
+                <span class="portrait-index">Off-screen</span>
+                <div class="portrait-card-image"><img src="assets/afham-portrait.jpeg" width="1080" height="1080" alt="Afham Ayub standing outdoors" loading="lazy" /></div>
+                <figcaption><span>AFHAM AYUB</span><span>Lahore / PK</span></figcaption>
+              </figure>
+              <div class="charm-rig">
+                <span class="charm-anchor" aria-hidden="true"></span>
+                <span class="charm-chain" aria-hidden="true"></span>
+                <button class="profile-charm" type="button" aria-label="Chrome star charm. Drag to move, or press Enter to swing." data-cursor="Drag">
+                  <img src="assets/chrome-star-charm.png" width="1280" height="1280" alt="" draggable="false" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <dl class="principles"><div><dt>Studying</dt><dd>BS Computer Science</dd></div><div><dt>University</dt><dd>FAST</dd></div><div><dt>Currently</dt><dd>Semester 03</dd></div><div><dt>Based in</dt><dd>Lahore, Pakistan</dd></div></dl>
+        </div>
+        <div class="portal-cover">
+          <svg class="portal-svg" width="100%" height="100%" aria-hidden="true">
+            <defs><mask id="about-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%" style="mask-type:luminance"><rect width="100%" height="100%" fill="white"/><g id="portal-glyph"><text id="portal-mask-text" fill="black" text-anchor="middle" dominant-baseline="alphabetic">ABOUT</text></g></mask></defs>
+            <rect width="100%" height="100%" fill="#06080d" mask="url(#about-mask)"/>
+            <text class="portal-title-outline" text-anchor="middle" dominant-baseline="alphabetic" fill="#e5e7eb" stroke="#e5e7eb" stroke-width=".3">ABOUT</text>
+          </svg>
+          <p class="portal-caption eyebrow">A little closer <span>↓</span></p>
+          <a class="portal-skip pill-link" href="#about-content">Skip to profile ↘</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="interest-strip" aria-label="Current interests"><span>Coding</span><span>Agentic AI</span><span>Automations</span><span>Sketching</span></div>
+
+    <section class="section expertise" id="expertise">
+      <div class="section-head reveal"><div class="section-number">02</div><h2>What draws me in.</h2><p>Interests / Practice</p></div>
+      <div class="expertise-list">
+        <article class="expertise-row reveal"><span class="row-num">01 / Build</span><h3>Coding &amp;<br/><em>new tools.</em></h3><p>Turning an idea into something I can run, test, and improve.</p><div class="tag-list"><span>Development</span><span>Experiments</span></div></article>
+        <article class="expertise-row reveal"><span class="row-num">02 / Explore</span><h3>Agentic AI &amp;<br/><em>automation.</em></h3><p>Exploring how AI agents and automated workflows can take useful work further.</p><div class="tag-list"><span>AI agents</span><span>Workflows</span></div></article>
+        <article class="expertise-row reveal"><span class="row-num">03 / Play</span><h3>Games &amp;<br/><em>their logic.</em></h3><p>Building a chess game and a Candy Crush prototype has given me a way to learn through play.</p><div class="tag-list"><span>Chess</span><span>Prototyping</span></div></article>
+        <article class="expertise-row reveal"><span class="row-num">04 / Observe</span><h3>Sketching &amp;<br/><em>paying attention.</em></h3><p>A pencil, a page, and time to notice the things I usually walk past.</p><div class="tag-list"><span>Personal practice</span><span>Drawing</span></div></article>
+      </div>
+    </section>
+
+    <section class="work" id="work" aria-labelledby="work-title">
+      <div class="work-pin section">
+        <div class="section-head"><div class="section-number">03</div><h2 id="work-title">Built out of curiosity.</h2><p>Selected projects</p></div>
+        <div class="work-toolbar"><p>Two games. Plenty learned along the way.</p><div class="work-controls"><span class="work-counter" aria-live="polite" aria-atomic="true">01 / 02</span><button type="button" class="work-prev" aria-label="Previous project">←</button><button type="button" class="work-next" aria-label="Next project">→</button></div></div>
+        <div class="work-window" tabindex="0" role="region" aria-label="Selected work. Scroll, swipe, or use the arrow keys to explore.">
+          <div class="project-list">
+            <article class="project-card project-chess">
+              <div class="project-art chess-study">
+                <div class="study-copy"><span class="eyebrow">01 / Game development</span><h3>Every move<br/><em>is a decision.</em></h3><p>A small knight-movement study for this portfolio, inspired by my chess game.</p><p class="study-instruction" id="knight-instruction">Choose a marked square. Keyboard: arrow keys, then Enter.</p><div class="study-tools"><button class="text-button knight-reset" type="button">Reset board</button><span class="knight-status" role="status" aria-live="polite">Knight on d4</span></div></div>
+                <div class="board-wrap"><div class="knight-board" role="group" aria-label="Knight movement study" aria-describedby="knight-instruction"></div><span class="board-caption">a — h / 8 × 8</span></div>
+              </div>
+              <div class="project-caption"><div><p>Personal project</p><h3>Chess game</h3></div><span>A study in rules &amp; play</span></div>
+            </article>
+            <article class="project-card project-candy">
+              <div class="project-art candy-study"><div class="study-copy"><span class="eyebrow">02 / Game prototype</span><h3>A little pattern.<br/><em>A chain reaction.</em></h3><p>A Candy Crush prototype, exploring the appeal of a simple match.</p><span class="study-instruction">Match-three / Interface study</span></div><div class="candy-board" aria-hidden="true"></div></div>
+              <div class="project-caption"><div><p>Prototype</p><h3>Candy Crush</h3></div><span>Patterns &amp; possibilities</span></div>
+            </article>
+          </div>
+        </div>
+        <div class="work-progress" aria-hidden="true"><span></span></div>
+        <p class="work-hint"><span>Scroll or use the arrows to explore</span><a class="text-link" href="https://github.com/Afhamyub" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></p>
+      </div>
+    </section>
+
+    <section class="section journey" id="journey">
+      <div class="section-head reveal"><div class="section-number">04</div><h2>A work in progress.</h2><p>Where I am / What’s next</p></div>
+      <div class="journey-intro reveal"><h3>Still learning.<br/><em>Always making.</em></h3><p>University, personal projects, and the things I keep coming back to.</p></div>
+      <div class="timeline">
+        <svg class="journey-thread" viewBox="0 0 1000 1560" preserveAspectRatio="none" aria-hidden="true"><defs><path id="journey-curve" d="M500 0 C500 90 650 100 610 190 C580 270 460 270 450 210 C440 145 570 145 575 225 C585 320 410 340 430 460 C445 550 565 560 565 495 C565 435 475 445 485 515 C500 640 660 660 615 790 C580 890 445 875 455 800 C465 725 570 775 540 860 C500 975 380 1010 430 1130 C465 1210 580 1205 570 1135 C560 1070 465 1090 490 1165 C535 1300 630 1370 500 1560"/></defs><use href="#journey-curve" class="thread-track"/><use href="#journey-curve" class="thread-draw"/><circle class="thread-head" cx="500" cy="0" r="6"/></svg>
+        <article class="timeline-item reveal"><div class="timeline-year"><span>01 / Right now</span><strong>Study</strong></div><div><h3>FAST University</h3><p>Third semester of a BS in Computer Science. Building my foundations while finding the areas I want to explore further.</p><div class="tag-list"><span>BSCS</span><span>Semester 03</span></div></div></article>
+        <article class="timeline-item reveal"><div class="timeline-year"><span>02 / Built so far</span><strong>Play</strong></div><div><h3>Learning through games</h3><p>A chess game and a Candy Crush prototype. Two personal projects that let me put code into practice.</p><div class="tag-list"><span>Chess</span><span>Candy Crush</span></div></div></article>
+        <article class="timeline-item reveal"><div class="timeline-year"><span>03 / Away from code</span><strong>Draw</strong></div><div><h3>A page and a pencil</h3><p>Sketching is my hobby. It gives me a different way to think, observe, and work through an idea.</p><div class="tag-list"><span>Sketching</span><span>Observation</span></div></div></article>
+        <article class="timeline-item reveal"><div class="timeline-year"><span>04 / Looking ahead</span><strong>Explore</strong></div><div><h3>Tools that do more</h3><p>I’m interested in agentic AI, AI automations, and developing new, innovative tools. That’s where I want to keep experimenting.</p><div class="tag-list"><span>Agentic AI</span><span>Automation</span></div></div></article>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="contact-halftone" aria-hidden="true"></div>
+      <div class="section-head reveal"><div class="section-number">05</div><h2>Say hello.</h2><p>Lahore, Pakistan</p></div>
+      <div class="contact-main reveal"><p>Talk code, share an idea, or just get in touch.</p><h3>Good things start<br/><em>with a conversation.</em></h3><a class="contact-link chase" data-cursor="Email" href="mailto:afhamayub.001@gmail.com">afhamayub.001@gmail.com <span aria-hidden="true">↗</span></a></div>
+      <nav class="social-links" aria-label="Social profiles"><a href="https://github.com/Afhamyub" target="_blank" rel="noopener noreferrer"><span>GitHub</span><span>Afhamyub ↗</span></a><a href="https://www.linkedin.com/in/afham-ayub-75b183425" target="_blank" rel="noopener noreferrer"><span>LinkedIn</span><span>Afham Ayub ↗</span></a><a href="https://www.instagram.com/afhamyub/" target="_blank" rel="noopener noreferrer"><span>Instagram</span><span>@afhamyub ↗</span></a></nav>
+      <footer><p>© <span id="year">2026</span> Afham Ayub</p><p>Student. Developer. Sketchbook keeper.</p><a class="chase" href="#home">Back to top ↑</a></footer>
+    </section>
+  </main>
+</body>
+</html>
