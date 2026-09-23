@@ -79,12 +79,12 @@ const portraitStage = $('.portrait-stage');
 const charmRig = $('.charm-rig');
 const profileCharm = $('.profile-charm');
 const starfields = [
-  {section:heroStage, canvas:$('.starfield-hero'), seed:197, desktopCount:118, mobileCount:52},
-  {section:$('.contact'), canvas:$('.starfield-contact'), seed:503, desktopCount:78, mobileCount:34}
+  {section:heroStage, canvas:$('.starfield-hero'), seed:197, desktopCount:130, mobileCount:68},
+  {section:$('.contact'), canvas:$('.starfield-contact'), seed:503, desktopCount:90, mobileCount:46}
 ].map(field => ({
   ...field, context:field.canvas.getContext('2d'), stars:[], visible:false,
   width:0, height:0, pointerX:.5, pointerY:.5, pointerActive:false,
-  impulses:[], meteor:null, nextMeteor:performance.now()+4800+field.seed*3
+  impulses:[], meteor:null, nextMeteor:performance.now()+2500+field.seed*2
 }));
 const pathLength = threadPath.getTotalLength();
 const pathPoints = Array.from({length:801}, (_,index) => threadPath.getPointAtLength(pathLength*index/800));
@@ -118,7 +118,7 @@ function seedRandom(seed) {
   };
 }
 function sizeStarfields() {
-  const ink=getComputedStyle(document.documentElement).getPropertyValue('--steel').trim();
+  const ink=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
   for (const field of starfields) {
     if (!field.context) continue;
     const bounds=field.section.getBoundingClientRect();
@@ -133,9 +133,9 @@ function sizeStarfields() {
     const count=innerWidth<=820 ? field.mobileCount : field.desktopCount;
     field.stars=Array.from({length:count},()=>({
       x:random()*width, y:random()*height,
-      radius:.5+random()*.85, alpha:.36+random()*.36,
+      radius:.65+random()*1.05, alpha:.5+random()*.4,
       phase:random()*Math.PI*2, speed:.0003+random()*.00055,
-      depth:.35+random()*.65
+      depth:.35+random()*.65, glint:random()<.12
     }));
     if (reduced) drawStarfield(field,0);
   }
@@ -158,14 +158,20 @@ function drawStarfield(field,time) {
       const pull=Math.sin(Math.PI*age)*influence*.12;
       x+=dx*pull;y+=dy*pull;
     }
-    ctx.globalAlpha=star.alpha*(moving?.76+.24*Math.sin(time*star.speed+star.phase):.76);
+    ctx.globalAlpha=star.alpha*(moving?.84+.16*Math.sin(time*star.speed+star.phase):.84);
     ctx.beginPath();ctx.arc(x,y,star.radius,0,Math.PI*2);ctx.fill();
+    if (star.glint) {
+      ctx.globalAlpha*=.32;
+      ctx.strokeStyle=field.ink;ctx.lineWidth=.7;
+      ctx.beginPath();ctx.moveTo(x-3,y);ctx.lineTo(x+3,y);
+      ctx.moveTo(x,y-3);ctx.lineTo(x,y+3);ctx.stroke();
+    }
   }
   if (moving) {
     for (const impulse of field.impulses) {
       const age=clamp((time-impulse.time)/1250);
-      ctx.globalAlpha=(1-age)*.34;
-      ctx.strokeStyle=field.ink;ctx.lineWidth=1;
+      ctx.globalAlpha=(1-age)*.5;
+      ctx.strokeStyle=field.ink;ctx.lineWidth=1.25;
       ctx.beginPath();ctx.arc(impulse.x,impulse.y,16+age*90,0,Math.PI*2);ctx.stroke();
     }
     if (time>=field.nextMeteor) {
