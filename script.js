@@ -78,6 +78,14 @@ const threadHead = $('.thread-head');
 const portraitStage = $('.portrait-stage');
 const charmRig = $('.charm-rig');
 const profileCharm = $('.profile-charm');
+const starfields = [
+  {section:heroStage, canvas:$('.starfield-hero'), seed:197, desktopCount:118, mobileCount:52},
+  {section:$('.contact'), canvas:$('.starfield-contact'), seed:503, desktopCount:78, mobileCount:34}
+].map(field => ({
+  ...field, context:field.canvas.getContext('2d'), stars:[], visible:false,
+  width:0, height:0, pointerX:.5, pointerY:.5, pointerActive:false,
+  impulses:[], meteor:null, nextMeteor:performance.now()+4800+field.seed*3
+}));
 const pathLength = threadPath.getTotalLength();
 const pathPoints = Array.from({length:801}, (_,index) => threadPath.getPointAtLength(pathLength*index/800));
 threadDraw.style.strokeDasharray = String(pathLength);
@@ -101,6 +109,121 @@ const charm = {
   offsetX:0,offsetY:0,lastMove:0,frame:0,ready:false
 };
 const absoluteTop = element => element.getBoundingClientRect().top + scrollY;
+
+function seedRandom(seed) {
+  let value=seed;
+  return () => {
+    value=(Math.imul(value,1664525)+1013904223)>>>0;
+    return value/4294967296;
+  };
+}
+function sizeStarfields() {
+  const ink=getComputedStyle(document.documentElement).getPropertyValue('--steel').trim();
+  for (const field of starfields) {
+    if (!field.context) continue;
+    const bounds=field.section.getBoundingClientRect();
+    const width=Math.max(1,bounds.width), height=Math.max(1,bounds.height);
+    const ratio=Math.min(devicePixelRatio||1,2);
+    if (field.width===width && field.height===height && field.ratio===ratio) continue;
+    field.width=width;field.height=height;field.ratio=ratio;field.ink=ink;
+    field.canvas.width=Math.round(width*ratio);
+    field.canvas.height=Math.round(height*ratio);
+    field.context.setTransform(ratio,0,0,ratio,0,0);
+    const random=seedRandom(field.seed);
+    const count=innerWidth<=820 ? field.mobileCount : field.desktopCount;
+    field.stars=Array.from({length:count},()=>({
+      x:random()*width, y:random()*height,
+      radius:.5+random()*.85, alpha:.36+random()*.36,
+      phase:random()*Math.PI*2, speed:.0003+random()*.00055,
+      depth:.35+random()*.65
+    }));
+    if (reduced) drawStarfield(field,0);
+  }
+}
+function drawStarfield(field,time) {
+  const ctx=field.context;
+  if (!ctx) return;
+  ctx.clearRect(0,0,field.width,field.height);
+  const moving=!reduced;
+  const pointerX=(field.pointerX-.5)*8, pointerY=(field.pointerY-.5)*8;
+  if (moving) field.impulses=field.impulses.filter(impulse=>time-impulse.time<1250);
+  ctx.fillStyle=field.ink;
+  for (const star of field.stars) {
+    let x=star.x+(moving&&field.pointerActive?pointerX*star.depth:0);
+    let y=star.y+(moving&&field.pointerActive?pointerY*star.depth:0);
+    if (moving) for (const impulse of field.impulses) {
+      const age=clamp((time-impulse.time)/1250);
+      const dx=impulse.x-x, dy=impulse.y-y;
+      const influence=Math.exp(-(dx*dx+dy*dy)/(field.width*field.width*.09));
+      const pull=Math.sin(Math.PI*age)*influence*.12;
+      x+=dx*pull;y+=dy*pull;
+    }
+    ctx.globalAlpha=star.alpha*(moving?.76+.24*Math.sin(time*star.speed+star.phase):.76);
+    ctx.beginPath();ctx.arc(x,y,star.radius,0,Math.PI*2);ctx.fill();
+  }
+  if (moving) {
+    for (const impulse of field.impulses) {
+      const age=clamp((time-impulse.time)/1250);
+      ctx.globalAlpha=(1-age)*.34;
+      ctx.strokeStyle=field.ink;ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(impulse.x,impulse.y,16+age*90,0,Math.PI*2);ctx.stroke();
+    }
+    if (time>=field.nextMeteor) {
+      const random=seedRandom(field.seed+Math.floor(time/1000));
+      field.meteor={time,x:field.width*(.18+random()*.6),y:field.height*(.12+random()*.35)};
+      field.nextMeteor=time+10000+random()*5000;
+    }
+    if (field.meteor) {
+      const age=(time-field.meteor.time)/900;
+      if (age>=1) field.meteor=null;
+      else {
+        const headX=field.meteor.x+age*135, headY=field.meteor.y+age*62;
+        const tailX=headX-75, tailY=headY-34;
+        const trail=ctx.createLinearGradient(tailX,tailY,headX,headY);
+        trail.addColorStop(0,'rgba(161,174,192,0)');
+        trail.addColorStop(1,'rgba(229,231,235,.9)');
+        ctx.globalAlpha=Math.sin(Math.PI*age)*.65;
+        ctx.strokeStyle=trail;ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(headX,headY);ctx.stroke();
+      }
+    }
+  }
+  ctx.globalAlpha=1;
+}
+function drawVisibleStarfields(time) {
+  let animated=false;
+  for (const field of starfields) {
+    if (!field.visible || !field.context) continue;
+    drawStarfield(field,time);
+    if (!reduced) animated=true;
+  }
+  return animated;
+}
+const starfieldObserver=new IntersectionObserver(entries=>{
+  for(const entry of entries) {
+    const field=starfields.find(item=>item.section===entry.target);
+    field.visible=entry.isIntersecting;
+  }
+  requestRender();
+},{threshold:0});
+for(const field of starfields) {
+  starfieldObserver.observe(field.section);
+  field.section.addEventListener('pointermove',event=>{
+    if (reduced || event.pointerType!=='mouse') return;
+    const bounds=field.section.getBoundingClientRect();
+    field.pointerX=clamp((event.clientX-bounds.left)/bounds.width);
+    field.pointerY=clamp((event.clientY-bounds.top)/bounds.height);
+    field.pointerActive=true;
+  },{passive:true});
+  field.section.addEventListener('pointerleave',()=>{field.pointerActive=false},{passive:true});
+  field.section.addEventListener('click',event=>{
+    if (reduced || !field.visible || event.target.closest('a,button,[role="button"]')) return;
+    const bounds=field.section.getBoundingClientRect();
+    field.impulses.push({x:event.clientX-bounds.left,y:event.clientY-bounds.top,time:performance.now()});
+    if(field.impulses.length>2)field.impulses.shift();
+    requestRender();
+  });
+}
 
 function canLockScroll() {
   return !reduced && finePointer.matches && innerWidth > 820;
@@ -217,6 +340,7 @@ function measure() {
     journeyTop:absoluteTop(timeline), journeyHeight:timeline.offsetHeight,
     maxScroll:Math.max(1,document.documentElement.scrollHeight-height)
   };
+  sizeStarfields();
   smoothTarget = clamp(smoothTarget,0,geometry.maxScroll);
   smoothCurrent = clamp(smoothCurrent,0,geometry.maxScroll);
   document.documentElement.classList.toggle('smooth-scroll-active',canLockScroll());
@@ -297,7 +421,7 @@ function render(time) {
   const point = pathPoints[Math.round(state.journey*800)];
   threadHead.setAttribute('cx',point.x);
   threadHead.setAttribute('cy',point.y);
-  if (unsettled) requestRender();
+  if (drawVisibleStarfields(time) || unsettled) requestRender();
 }
 
 addEventListener('scroll',()=>{
