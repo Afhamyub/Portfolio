@@ -11,13 +11,16 @@ body.classList.toggle('motion-enabled', !reduced);
 
 const intro = $('.intro');
 let introFinished = false;
-let introTimeline;
+let introAnimations = [];
 let introTimer;
 function finishIntro() {
   if (introFinished) return;
   introFinished = true;
   clearTimeout(introTimer);
-  introTimeline?.pause();
+  introAnimations.forEach(animation=>{
+    try{animation.commitStyles()}catch{}
+    animation.cancel();
+  });
   body.classList.remove('intro-active');
   $('.site-header').inert=false;
   $('main').inert=false;
@@ -32,25 +35,32 @@ if (reduced || location.hash) {
   body.classList.add('intro-active');
   $('.site-header').inert=true;
   $('main').inert=true;
-  const anime = window.anime;
-  if (anime?.createTimeline) {
-    introTimeline = anime.createTimeline({onComplete:finishIntro})
-      .add('.intro-name span', {
-        opacity:[0,1], translateY:['105%','0%'], rotate:['8deg','0deg'],
-        delay:(_,index)=>index*65, duration:720, ease:'outExpo'
-      })
-      .add('.intro-rule i', {translateX:['-101%','0%'],duration:900,ease:'inOutQuint'}, 150)
-      .add('.intro-code', {opacity:[0,1],duration:450}, 700)
-      .add('.intro-lockup', {opacity:[1,0],translateY:[0,-8],duration:400,ease:'inQuad'}, 1500);
-  } else {
-    setTimeout(finishIntro, 700);
-  }
-  introTimer = setTimeout(finishIntro, 2400);
+  $$('.intro-name span').forEach((letter,index)=>{
+    introAnimations.push(letter.animate(
+      [{opacity:0,transform:'translateY(105%) rotate(8deg)'},{opacity:1,transform:'translateY(0) rotate(0)'}],
+      {duration:620,delay:index*55,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}
+    ));
+  });
+  introAnimations.push($('.intro-rule i').animate(
+    [{transform:'translateX(-101%)'},{transform:'translateX(0)'}],
+    {duration:720,delay:120,easing:'cubic-bezier(.76,0,.24,1)',fill:'both'}
+  ));
+  introAnimations.push($('.intro-code').animate(
+    [{opacity:0},{opacity:1}],{duration:320,delay:560,easing:'ease-out',fill:'both'}
+  ));
+  const lockupExit=$('.intro-lockup').animate(
+    [{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-8px)'}],
+    {duration:300,delay:1250,easing:'ease-in',fill:'both'}
+  );
+  introAnimations.push(lockupExit);
+  lockupExit.finished.then(finishIntro).catch(()=>{});
+  introTimer = setTimeout(finishIntro, 1800);
 }
 $('.intro-skip')?.addEventListener('click', finishIntro);
 
 const hero = $('.hero');
 const heroStage = $('.hero-stage');
+const portraitRails = $('.portrait-rails');
 const railA = $('.rail-a');
 const railB = $('.rail-b');
 const heroCopy = $('.hero-copy');
@@ -78,21 +88,35 @@ const threadHead = $('.thread-head');
 const portraitStage = $('.portrait-stage');
 const charmRig = $('.charm-rig');
 const profileCharm = $('.profile-charm');
+const magicText = $('[data-magic-text]');
+const magicSource = magicText.textContent.trim().replace(/\s+/g,' ');
+magicText.textContent='';
+magicText.setAttribute('aria-label',magicSource);
+const magicInks = magicSource.split(' ').map(word=>{
+  const wrapper=document.createElement('span');
+  wrapper.className='magic-word';wrapper.setAttribute('aria-hidden','true');
+  const ghost=document.createElement('span');
+  ghost.className='magic-word-ghost';ghost.textContent=word;
+  const ink=document.createElement('span');
+  ink.className='magic-word-ink';ink.textContent=word;
+  wrapper.append(ghost,ink);magicText.append(wrapper);
+  return ink;
+});
 const starfields = [
   {section:heroStage, canvas:$('.starfield-hero'), seed:197, desktopCount:130, mobileCount:68},
   {section:$('.contact'), canvas:$('.starfield-contact'), seed:503, desktopCount:90, mobileCount:46}
 ].map(field => ({
   ...field, context:field.canvas.getContext('2d'), stars:[], visible:false,
   width:0, height:0, pointerX:.5, pointerY:.5, pointerActive:false,
-  impulses:[], meteor:null, nextMeteor:performance.now()+2500+field.seed*2
+  impulses:[], meteor:null, nextMeteor:performance.now()+2500+field.seed*2,lastDraw:0
 }));
 const pathLength = threadPath.getTotalLength();
-const pathPoints = Array.from({length:801}, (_,index) => threadPath.getPointAtLength(pathLength*index/800));
 threadDraw.style.strokeDasharray = String(pathLength);
 const header = $('.site-header');
 const progressBar = $('.scroll-progress');
 let geometry = {};
-let frame = 0, lastTime = 0, resizeFrame = 0;
+let frame = 0, lastTime = 0, resizeFrame = 0, starTimer = 0;
+let lastScrollPosition = -1, scenePainted = false;
 let state = {hero:0, portal:0, work:0, journey:0};
 let lastCounter = -1;
 let horizontal = false;
@@ -200,7 +224,10 @@ function drawVisibleStarfields(time) {
   let animated=false;
   for (const field of starfields) {
     if (!field.visible || !field.context) continue;
-    drawStarfield(field,time);
+    if (reduced || time-field.lastDraw>=50) {
+      drawStarfield(field,time);
+      field.lastDraw=time;
+    }
     if (!reduced) animated=true;
   }
   return animated;
@@ -279,19 +306,13 @@ function movePage(top, behavior = reduced ? 'instant' : 'smooth') {
 
 function measure() {
   resizeFrame = 0;
+  scenePainted = false;
   const viewport = document.documentElement.clientWidth;
   const height = innerHeight;
   // Keep scroll travel even when the hero's content is taller than the viewport.
   hero.style.setProperty('--hero-height', heroStage.offsetHeight + 'px');
   hero.style.setProperty('--hero-pin-top', Math.min(0,height-heroStage.offsetHeight) + 'px');
   $('.journey-thread').setAttribute('viewBox',viewport<=580?'405 0 280 1560':'0 0 1000 1560');
-  // Keep enough photographs above and below the frame on tall/narrow screens.
-  for (const rail of [railA,railB]) {
-    const pair=[...rail.children].slice(0,2);
-    while (rail.offsetHeight < height*1.8 && rail.childElementCount < 20) {
-      pair.forEach(photo=>rail.append(photo.cloneNode(true)));
-    }
-  }
   const travel = reduced ? 0 : height * (viewport <= 580 ? .95 : 1.2);
   about.style.setProperty('--about-height', aboutContent.offsetHeight + 'px');
   about.style.setProperty('--portal-travel', travel + 'px');
@@ -352,6 +373,11 @@ function measure() {
   document.documentElement.classList.toggle('smooth-scroll-active',canLockScroll());
   layoutCharm();
   state = targets();
+  if (!reduced) {
+    railA.style.transform = 'translate3d(0,' + mix(-geometry.railARange,-25,state.hero) + 'px,0)';
+    railB.style.transform = 'translate3d(0,' + mix(-25,-geometry.railBRange,state.hero) + 'px,0)';
+  }
+  portraitRails.classList.add('is-ready');
   requestRender();
 }
 function targets() {
@@ -364,7 +390,11 @@ function targets() {
   };
 }
 function requestRender() {
+  if (starTimer) {clearTimeout(starTimer);starTimer=0}
   if (!frame && !document.hidden) frame = requestAnimationFrame(render);
+}
+function scheduleStarRender() {
+  if (!starTimer && !document.hidden) starTimer=setTimeout(()=>{starTimer=0;requestRender()},50);
 }
 function updateWorkUI(progress) {
   const index = Math.round(progress*(projectCards.length-1));
@@ -382,52 +412,68 @@ function render(time) {
   lastTime = time;
   const ease = 1 - Math.exp(-delta/75);
   const target = targets();
+  const scrollPosition=scrollY;
+  let sceneChanged=!scenePainted || scrollPosition!==lastScrollPosition;
+  lastScrollPosition=scrollPosition;
   let unsettled = false;
   for (const key of Object.keys(state)) {
     // Pin boundaries must meet native document flow exactly.
+    const previous=state[key];
     state[key] = reduced || target[key]===0 || target[key]===1
       ? target[key] : mix(state[key],target[key],ease);
+    if (Math.abs(state[key]-previous)>.00001) sceneChanged=true;
     if (Math.abs(state[key]-target[key])>.0001) unsettled = true;
   }
-  progressBar.style.transform = 'scaleX(' + clamp(scrollY/geometry.maxScroll) + ')';
-  header.classList.toggle('scrolled',scrollY>32);
-  if (!reduced) {
-    railA.style.transform = 'translate3d(0,' + mix(-geometry.railARange,-25,state.hero) + 'px,0)';
-    railB.style.transform = 'translate3d(0,' + mix(-25,-geometry.railBRange,state.hero) + 'px,0)';
-    heroCopy.style.transform = 'translate3d(0,' + (-state.hero*38) + 'px,0)';
-    const p = state.portal;
-    const t = smoothstep(clamp((p-.04)/.87));
-    // A bounded zoom avoids oversized glyph textures on mobile GPUs.
-    // The final dissolve completes the opening into normal document flow.
-    const scale = Math.exp(t*Math.log(22));
-    const aim = smoothstep(clamp(p/.55));
-    const x = mix(geometry.cx,geometry.stemX,aim);
-    const y = mix(geometry.cy,geometry.stemY,aim);
-    const transform = 'translate(' + geometry.cx + ' ' + geometry.cy + ') scale(' + scale + ') translate(' + (-x) + ' ' + (-y) + ')';
-    portalGlyph.setAttribute('transform',transform);
-    portalOutline.setAttribute('transform',transform);
-    // Start with solid ink, then dissolve it into the live section as we enter.
-    portalOutline.style.opacity = String(1-smoothstep(clamp((p-.08)/.36)));
-    aboutContent.style.opacity = String(mix(.3,1,smoothstep(clamp(p/.68))));
-    const captionOpacity = String(1-clamp(p/.18));
-    portalCaption.style.opacity = captionOpacity;
-    portalSkip.style.opacity = captionOpacity;
-    portalSkip.tabIndex = p < .18 ? 0 : -1;
-    portalCover.style.opacity = String(1-smoothstep(clamp((p-.44)/.36)));
-    portalCover.classList.toggle('is-finished',p>=.82);
-    aboutContent.inert = p < .82;
-  } else {
-    aboutContent.inert = false;
-    aboutContent.style.opacity = '1';
-    heroCopy.style.transform = '';
+  if (sceneChanged) {
+    progressBar.style.transform = 'scaleX(' + clamp(scrollPosition/geometry.maxScroll) + ')';
+    header.classList.toggle('scrolled',scrollPosition>32);
+    if (!reduced) {
+      railA.style.transform = 'translate3d(0,' + mix(-geometry.railARange,-25,state.hero) + 'px,0)';
+      railB.style.transform = 'translate3d(0,' + mix(-25,-geometry.railBRange,state.hero) + 'px,0)';
+      heroCopy.style.transform = 'translate3d(0,' + (-state.hero*38) + 'px,0)';
+      const p = state.portal;
+      const t = smoothstep(clamp((p-.04)/.87));
+      // A bounded zoom avoids oversized glyph textures on mobile GPUs.
+      // The final dissolve completes the opening into normal document flow.
+      const scale = Math.exp(t*Math.log(22));
+      const aim = smoothstep(clamp(p/.55));
+      const x = mix(geometry.cx,geometry.stemX,aim);
+      const y = mix(geometry.cy,geometry.stemY,aim);
+      const transform = 'translate(' + geometry.cx + ' ' + geometry.cy + ') scale(' + scale + ') translate(' + (-x) + ' ' + (-y) + ')';
+      portalGlyph.setAttribute('transform',transform);
+      portalOutline.setAttribute('transform',transform);
+      // Start with solid ink, then dissolve it into the live section as we enter.
+      portalOutline.style.opacity = String(1-smoothstep(clamp((p-.08)/.36)));
+      aboutContent.style.opacity = String(mix(.3,1,smoothstep(clamp(p/.68))));
+      const captionOpacity = String(1-clamp(p/.18));
+      portalCaption.style.opacity = captionOpacity;
+      portalSkip.style.opacity = captionOpacity;
+      portalSkip.tabIndex = p < .18 ? 0 : -1;
+      portalCover.style.opacity = String(1-smoothstep(clamp((p-.44)/.36)));
+      portalCover.classList.toggle('is-finished',p>=.82);
+      aboutContent.inert = p < .82;
+    } else {
+      aboutContent.inert = false;
+      aboutContent.style.opacity = '1';
+      heroCopy.style.transform = '';
+    }
+    const magicProgress=reduced?1:smoothstep(clamp((state.portal-.56)/.32));
+    const wordRange=1/Math.max(1,magicInks.length);
+    magicInks.forEach((ink,index)=>{
+      const progress=smoothstep(clamp((magicProgress-index*wordRange)/wordRange));
+      ink.style.opacity=String(progress);
+    });
+    if (horizontal) workTrack.style.transform = 'translate3d(' + (-state.work*geometry.range) + 'px,0,0)';
+    updateWorkUI(horizontal ? state.work : target.work);
+    threadDraw.style.strokeDashoffset = String(pathLength*(1-state.journey));
+    const point = threadPath.getPointAtLength(pathLength*state.journey);
+    threadHead.setAttribute('cx',point.x);
+    threadHead.setAttribute('cy',point.y);
+    scenePainted=true;
   }
-  if (horizontal) workTrack.style.transform = 'translate3d(' + (-state.work*geometry.range) + 'px,0,0)';
-  updateWorkUI(horizontal ? state.work : target.work);
-  threadDraw.style.strokeDashoffset = String(pathLength*(1-state.journey));
-  const point = pathPoints[Math.round(state.journey*800)];
-  threadHead.setAttribute('cx',point.x);
-  threadHead.setAttribute('cy',point.y);
-  if (drawVisibleStarfields(time) || unsettled) requestRender();
+  const starsActive=drawVisibleStarfields(time);
+  if (unsettled) requestRender();
+  else if (starsActive) scheduleStarRender();
 }
 
 addEventListener('scroll',()=>{
