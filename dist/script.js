@@ -86,6 +86,40 @@ const threadPath = $('#journey-curve');
 const threadDraw = $('.thread-draw');
 const threadHalo = $('.thread-halo');
 const threadHead = $('.thread-head');
+const journeySvg = $('.journey-thread');
+const filamentGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
+filamentGroup.setAttribute('class','journey-filaments');
+const filamentClip = document.createElementNS('http://www.w3.org/2000/svg','mask');
+filamentClip.id='filament-reveal';
+const filamentReveal = document.createElementNS('http://www.w3.org/2000/svg','rect');
+filamentReveal.setAttribute('width','1000');
+filamentReveal.setAttribute('height','0');
+filamentReveal.setAttribute('fill','white');
+filamentClip.append(filamentReveal);
+const revealGradient=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+revealGradient.id='filament-edge';
+revealGradient.setAttribute('x1','0');revealGradient.setAttribute('y1','0');
+revealGradient.setAttribute('x2','0');revealGradient.setAttribute('y2','1');
+for(const [offset,color] of [['0%','white'],['100%','black']]){
+  const stop=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  stop.setAttribute('offset',offset);stop.setAttribute('stop-color',color);revealGradient.append(stop);
+}
+const edgeFade=document.createElementNS('http://www.w3.org/2000/svg','rect');
+edgeFade.setAttribute('width','1000');edgeFade.setAttribute('height','110');
+edgeFade.setAttribute('fill','url(#filament-edge)');
+filamentClip.append(edgeFade);
+journeySvg.querySelector('defs').append(revealGradient);
+journeySvg.querySelector('defs').append(filamentClip);
+filamentGroup.setAttribute('mask','url(#filament-reveal)');
+journeySvg.append(filamentGroup);
+const filamentPaths=Array.from({length:38},(_,index)=>{
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.classList.add(index<14?'filament-trunk':'filament-branch');
+  if(index%5===0)path.classList.add('filament-core');
+  filamentGroup.append(path);
+  return path;
+});
+let lastFilamentDraw=0;
 const branchPaths = $$('.journey-branches path').map((path,index)=>{
   const length=path.getTotalLength();
   path.style.strokeDasharray=String(length);
@@ -481,6 +515,10 @@ function render(time) {
     updateWorkUI(horizontal ? state.work : target.work);
     threadDraw.style.strokeDashoffset = String(pathLength*(1-state.journey));
     threadHalo.style.strokeDashoffset = String(pathLength*(1-state.journey));
+    const revealY=reduced?1560:1560*state.journey;
+    filamentReveal.setAttribute('height',String(Math.max(0,revealY-110)));
+    edgeFade.setAttribute('y',String(Math.max(0,revealY-110)));
+    edgeFade.setAttribute('height',String(Math.min(110,revealY)));
     branchPaths.forEach(({path,pulse,length,start,end})=>{
       const progress=smoothstep(clamp((state.journey-start)/(end-start)));
       path.style.strokeDashoffset=String(length*(1-progress));
@@ -493,9 +531,58 @@ function render(time) {
     threadHead.setAttribute('cy',point.y);
     scenePainted=true;
   }
+  const journeyBounds=timeline.getBoundingClientRect();
+  const journeyActive=!reduced && journeyBounds.bottom>0 && journeyBounds.top<innerHeight;
+  if((journeyActive && time-lastFilamentDraw>45) || (!lastFilamentDraw && reduced)){
+    drawFilaments(reduced?0:time*.00028);
+    lastFilamentDraw=time;
+  }
   const starsActive=drawVisibleStarfields(time);
   if (unsettled) requestRender();
-  else if (starsActive) scheduleStarRender();
+  else if (starsActive || journeyActive) scheduleStarRender();
+}
+
+function drawFilaments(t){
+  const center=y=>500+26*Math.sin(y*.007+t*.6)+13*Math.sin(y*.015-t*.4);
+  const smoothPath=points=>{
+    let d='M'+points[0][0].toFixed(1)+' '+points[0][1].toFixed(1);
+    for(let i=1;i<points.length-1;i++){
+      const midX=(points[i][0]+points[i+1][0])/2;
+      const midY=(points[i][1]+points[i+1][1])/2;
+      d+=' Q'+points[i][0].toFixed(1)+' '+points[i][1].toFixed(1)+' '+midX.toFixed(1)+' '+midY.toFixed(1);
+    }
+    const last=points.at(-1);
+    return d+' L'+last[0].toFixed(1)+' '+last[1].toFixed(1);
+  };
+  filamentPaths.forEach((path,index)=>{
+    const trunk=index<14;
+    const strand=trunk?index:index-14;
+    const phase=strand*2.399;
+    const points=[];
+    if(trunk){
+      for(let step=0;step<=52;step++){
+        const y=step*30;
+        const braid=24*Math.sin(y*.018+t+phase)+12*Math.sin(y*.036-t*.8+phase*.6);
+        const spread=(strand-6.5)*4.1;
+        const x=center(y)+spread+braid;
+        points.push([x,y]);
+      }
+    }else{
+      const anchors=[210,550,910,1250];
+      const side=strand%2===0?-1:1;
+      const y0=anchors[Math.floor(strand/6)]+(strand%6-2.5)*9;
+      for(let step=0;step<=22;step++){
+        const u=step/22;
+        const y=y0+side*0+36*Math.sin(u*4+phase+t)+u*(strand%3-1)*55;
+        const x=center(y0)+side*(u*275+13*Math.sin(u*13+phase+t*1.4));
+        points.push([x,y]);
+      }
+      const progress=smoothstep(clamp((state.journey-(y0/1560-.08))/.16));
+      path.style.strokeDasharray='900';
+      path.style.strokeDashoffset=String(900*(1-progress));
+    }
+    path.setAttribute('d',smoothPath(points));
+  });
 }
 
 addEventListener('scroll',()=>{
