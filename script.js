@@ -84,7 +84,20 @@ const projectCards = $$('.project-card');
 const timeline = $('.timeline');
 const threadPath = $('#journey-curve');
 const threadDraw = $('.thread-draw');
+const threadHalo = $('.thread-halo');
 const threadHead = $('.thread-head');
+const branchPaths = $$('.journey-branches path').map((path,index)=>{
+  const length=path.getTotalLength();
+  path.style.strokeDasharray=String(length);
+  const pulse=path.cloneNode(false);
+  pulse.removeAttribute('data-start');pulse.removeAttribute('data-end');
+  pulse.classList.add('branch-pulse');
+  pulse.style.strokeDasharray='18 '+String(length+18);
+  pulse.style.setProperty('--pulse-length',String(length+18));
+  pulse.style.animationDelay=String(-index*.62)+'s';
+  path.after(pulse);
+  return {path,pulse,length,start:Number(path.dataset.start),end:Number(path.dataset.end)};
+});
 const portraitStage = $('.portrait-stage');
 const charmRig = $('.charm-rig');
 const profileCharm = $('.profile-charm');
@@ -112,6 +125,7 @@ const starfields = [
 }));
 const pathLength = threadPath.getTotalLength();
 threadDraw.style.strokeDasharray = String(pathLength);
+threadHalo.style.strokeDasharray = String(pathLength);
 const header = $('.site-header');
 const progressBar = $('.scroll-progress');
 let geometry = {};
@@ -466,6 +480,14 @@ function render(time) {
     if (horizontal) workTrack.style.transform = 'translate3d(' + (-state.work*geometry.range) + 'px,0,0)';
     updateWorkUI(horizontal ? state.work : target.work);
     threadDraw.style.strokeDashoffset = String(pathLength*(1-state.journey));
+    threadHalo.style.strokeDashoffset = String(pathLength*(1-state.journey));
+    branchPaths.forEach(({path,pulse,length,start,end})=>{
+      const progress=smoothstep(clamp((state.journey-start)/(end-start)));
+      path.style.strokeDashoffset=String(length*(1-progress));
+      path.style.opacity=String(reduced?0.7:mix(.16,.82,progress));
+      path.classList.toggle('is-lit',progress>.98);
+      pulse.classList.toggle('is-lit',progress>.98 && !reduced);
+    });
     const point = threadPath.getPointAtLength(pathLength*state.journey);
     threadHead.setAttribute('cx',point.x);
     threadHead.setAttribute('cy',point.y);
