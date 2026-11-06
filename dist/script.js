@@ -26,7 +26,7 @@ function finishIntro() {
   $('main').inert=false;
   if (reduced || location.hash) { intro.remove(); return; }
   intro.style.pointerEvents = 'none';
-  const exit = intro.animate([{opacity:1},{opacity:0}], {duration:240, easing:'ease-out', fill:'forwards'});
+  const exit = intro.animate([{opacity:1},{opacity:0}], {duration:160, easing:'ease-out', fill:'forwards'});
   exit.finished.then(() => intro.remove()).catch(() => intro.remove());
 }
 if (reduced || location.hash) {
@@ -38,23 +38,23 @@ if (reduced || location.hash) {
   $$('.intro-name span').forEach((letter,index)=>{
     introAnimations.push(letter.animate(
       [{opacity:0,transform:'translateY(105%) rotate(8deg)'},{opacity:1,transform:'translateY(0) rotate(0)'}],
-      {duration:420,delay:index*25,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}
+      {duration:260,delay:index*15,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}
     ));
   });
   introAnimations.push($('.intro-rule i').animate(
     [{transform:'translateX(-101%)'},{transform:'translateX(0)'}],
-    {duration:480,delay:60,easing:'cubic-bezier(.76,0,.24,1)',fill:'both'}
+    {duration:300,delay:30,easing:'cubic-bezier(.76,0,.24,1)',fill:'both'}
   ));
   introAnimations.push($('.intro-code').animate(
-    [{opacity:0},{opacity:1}],{duration:180,delay:380,easing:'ease-out',fill:'both'}
+    [{opacity:0},{opacity:1}],{duration:120,delay:240,easing:'ease-out',fill:'both'}
   ));
   const lockupExit=$('.intro-lockup').animate(
     [{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-8px)'}],
-    {duration:180,delay:650,easing:'ease-in',fill:'both'}
+    {duration:120,delay:400,easing:'ease-in',fill:'both'}
   );
   introAnimations.push(lockupExit);
   lockupExit.finished.then(finishIntro).catch(()=>{});
-  introTimer = setTimeout(finishIntro, 980);
+  introTimer = setTimeout(finishIntro, 620);
 }
 $('.intro-skip')?.addEventListener('click', finishIntro);
 
